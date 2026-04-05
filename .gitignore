@@ -1,0 +1,26 @@
+# Trained weights (large — upload separately or use Releases / Drive link)
+approach_a_bert_model/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Streamlit / secrets (if you add later)
+.streamlit/secrets.toml

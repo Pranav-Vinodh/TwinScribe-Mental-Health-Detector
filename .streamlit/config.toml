@@ -1,0 +1,14 @@
+# Fewer re-imports / less noise when the `transformers` package is on the path.
+[server]
+fileWatcherType = "none"
+
+[runner]
+fastReruns = true
+
+[theme]
+base = "dark"
+primaryColor = "#c4a77d"
+backgroundColor = "#07080b"
+secondaryBackgroundColor = "#12141a"
+textColor = "#e8e4dc"
+font = "sans serif"
