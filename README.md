@@ -32,6 +32,3 @@ Open `approach_a_bert_training.ipynb` in **Google Colab** (GPU), set `CSV_PATH` 
 - `mental_heath_unbanlanced.csv` — Kaggle mental health text classification data.
 - Reference PDFs in the repo: team deck + base IEEE Access paper (Digital Twin dialogue system).
 
-## License
-
-See [LICENSE](LICENSE) in the GitHub repository (MIT if that matches your remote).
