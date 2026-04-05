@@ -1,5 +1,5 @@
 """
-Twinscribe — Streamlit UI for the Approach A BERT severity screen.
+Twinscribe — mental health detector (Streamlit UI).
 Run:  streamlit run streamlit_app.py
 """
 from __future__ import annotations
@@ -21,7 +21,8 @@ from chatbot_inference import load_label_map, response_for_severity, run_inferen
 DEFAULT_MODEL_DIR = os.environ.get("MODEL_DIR", "approach_a_bert_model")
 
 APP_NAME = "Twinscribe"
-APP_TAGLINE = "text triage · BERT · inspired by digital-twin screening (demo, not clinical)"
+APP_TITLE = "Mental health detector"
+APP_TAGLINE = "BERT text triage · three severity bands · demo only, not a medical device"
 
 # (display name, bar hex, verdict glow on dark inset)
 _SEVERITY_VIS = {
@@ -242,7 +243,7 @@ def _render_result(user_text: str, label: str, confidence: float, probs: dict, o
 
 def main() -> None:
     st.set_page_config(
-        page_title="Twinscribe · text triage",
+        page_title="Twinscribe — Mental health detector",
         page_icon="◎",
         layout="centered",
     )
@@ -262,7 +263,7 @@ def main() -> None:
     order = [id2label[i] for i in sorted(id2label.keys())]
 
     st.markdown(f'<p class="app-brand">{html.escape(APP_NAME)}</p>', unsafe_allow_html=True)
-    st.markdown('<p class="app-title">How does this message read?</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="app-title">{html.escape(APP_TITLE)}</p>', unsafe_allow_html=True)
     st.markdown(f'<p class="app-sub">{html.escape(APP_TAGLINE)}</p>', unsafe_allow_html=True)
     st.markdown(
         f'<span class="status-pill">{device.type.upper()} · {" · ".join(order)}</span>',
@@ -275,7 +276,7 @@ def main() -> None:
         placeholder="Paste or type one message — mood, worry, sleep, hope, anything on your mind…",
         label_visibility="collapsed",
     )
-    go = st.button("Run Twinscribe", type="primary", use_container_width=True)
+    go = st.button("Run detector", type="primary", use_container_width=True)
 
     if go and user_text.strip():
         label, confidence, probs = run_inference(
