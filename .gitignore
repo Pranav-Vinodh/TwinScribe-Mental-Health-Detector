@@ -1,5 +1,6 @@
 # Trained weights (large — upload separately or use Releases / Drive link)
 approach_a_bert_model/
+approach_b_roberta_model/
 
 # Python
 __pycache__/

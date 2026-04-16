@@ -18,7 +18,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from chatbot_inference import load_label_map, response_for_severity, run_inference
 
-DEFAULT_MODEL_DIR = os.environ.get("MODEL_DIR", "approach_a_bert_model")
+DEFAULT_MODEL_DIR = os.environ.get("MODEL_DIR", "approach_b_roberta_model")
 
 APP_NAME = "Twinscribe"
 APP_TITLE = "Mental health detector"
