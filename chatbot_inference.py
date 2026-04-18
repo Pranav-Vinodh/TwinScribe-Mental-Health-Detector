@@ -13,6 +13,7 @@ warnings.filterwarnings("ignore", message=r"Accessing `__path__` from")
 import argparse
 import json
 import os
+import random
 import re
 import sys
 from pathlib import Path
@@ -79,23 +80,48 @@ def run_inference(
 def response_for_severity(label: str, confidence: float) -> str:
     """Template responses aligned with a screening / digital-twin style dialogue (not clinical advice)."""
     c = f" (model confidence about {confidence:.0%})"
+    disclaimer = (
+        "This is supportive guidance only, not a diagnosis. "
+        "If you feel unsafe or in immediate danger, contact emergency services or a crisis line now."
+    )
     if label == "No Symptoms":
-        return (
+        options = [
             "From this message alone, the model does not flag strong mental-health distress signals."
             + c
-            + " If anything still feels off, talking to someone you trust or a professional is always reasonable."
-        )
+            + " If anything still feels off, talking to someone you trust or a professional is always reasonable.",
+            "This message reads as lower concern in this project’s screening setup."
+            + c
+            + " You can still check in with someone you trust if anything feels unsettled.",
+            "Right now, the model sees fewer distress indicators in this text."
+            + c
+            + " You still deserve support whenever you want it, even without clear warning signs.",
+        ]
+        return f"{random.choice(options)}\n\n*{disclaimer}*"
     if label == "Mild/Moderate":
-        return (
+        options = [
             "The model suggests mild-to-moderate distress themes in what you wrote."
             + c
-            + " Consider self-care, reaching out to supportive people, and—if symptoms persist or worsen—speaking with a qualified mental health professional."
-        )
-    return (
+            + " Consider self-care, reaching out to supportive people, and—if symptoms persist or worsen—speaking with a qualified mental health professional.",
+            "Your text appears to carry some emotional strain in the mild-to-moderate range for this classifier."
+            + c
+            + " It may help to combine practical self-care with support from trusted people.",
+            "This turn looks like manageable but meaningful distress to the model."
+            + c
+            + " If this keeps building, speaking with a qualified mental health professional is a good next step.",
+        ]
+        return f"{random.choice(options)}\n\n*{disclaimer}*"
+    options = [
         "The model flags this message in the highest concern category we use in this project."
         + c
-        + " If you are in immediate danger or thinking about harming yourself, please contact local emergency services or a suicide/crisis line right away. You deserve support."
-    )
+        + " If you are in immediate danger or thinking about harming yourself, please contact local emergency services or a suicide/crisis line right away. You deserve support.",
+        "This message is classified in the highest concern band for this demo."
+        + c
+        + " If there is any risk you might hurt yourself, please call emergency services or a crisis helpline now.",
+        "The model is treating this as high concern."
+        + c
+        + " Please reach out to emergency services or a suicide/crisis hotline immediately if you might act on self-harm thoughts.",
+    ]
+    return f"{random.choice(options)}\n\n*{disclaimer}*"
 
 
 def main() -> None:
