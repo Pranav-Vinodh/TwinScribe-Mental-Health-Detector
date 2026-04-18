@@ -2,55 +2,163 @@
 
 **Repository:** [github.com/Pranav-Vinodh/TwinScribe-Mental-Health-Detector](https://github.com/Pranav-Vinodh/TwinScribe-Mental-Health-Detector)
 
-BERT-based **Approach A** text triage: three severity bands (No symptoms · Mild/Moderate · Severe), trained on the Kaggle mental health text dataset. Includes a Colab-oriented training notebook, a CLI, and a **Streamlit** UI (**Twinscribe**) with an in-session stateful chatbot that asks follow-up questions and uses prior turns for continuity.
+TwinScribe is a BERT-based mental health text triage project with two user-facing modes:
 
-> Demo / coursework — not a medical device.
+- a command-line inference tool for quick label prediction
+- a Streamlit chatbot UI that keeps in-session context, asks structured follow-up questions, and provides practical suggestions
 
-## Relation to the base paper (IEEE Access “Digital Twin” dialogue system)
+The classifier predicts one of three severity bands:
 
-This repo is a **course-style adaptation**, not a full replication of the paper’s stack.
+- `No Symptoms`
+- `Mild/Moderate`
+- `Severe`
 
-| Scope | Rough alignment |
-|--------|-------------------|
-| **Full paper system** (E-DAIC + PHQ labels, Rasa NLU/Core with stories/rules, digital-twin feedback loop, webchat deployment, formal usability study) | **~20–30%** — we do not ship Rasa, E-DAIC, PHQ integration, or that evaluation pipeline. |
-| **“BERT drives severity-aware user guidance”** slice | **~45–55%** — we fine-tune BERT on public Reddit-style text with mapped severity bands and use it in a **Streamlit** chatbot that picks **follow-up prompts** from the predicted class (a lightweight mimic of “classification → feedback,” not Rasa dialogue policies). |
+> Demo / coursework project only. This is **not** a medical device and does **not** provide diagnosis.
 
-The Streamlit app is explicitly a **Streamlit mimic** of that idea: **not** Rasa, **not** the paper’s clinical authoring workflow, **not** a regulated medical device.
+---
 
-## Quick start (inference + UI)
+## What this project does
 
-1. Python 3.10+ recommended.
-2. Place your fine-tuned folder next to this repo (default name `approach_a_bert_model/`) — produced by `approach_a_bert_training.ipynb` — or set `MODEL_DIR`.
-3. Install and run Streamlit:
+Given user-written text, TwinScribe:
+
+1. cleans and tokenizes the text
+2. runs a fine-tuned BERT sequence classifier
+3. maps model probabilities to severity labels
+4. generates supportive, safety-aware responses
+5. in the Streamlit app, continues with a structured interview flow and periodic summaries/advice
+
+The chatbot is intentionally designed as a **screening-style support assistant**, not a replacement for a clinician.
+
+---
+
+## Core features
+
+- **Three-class severity inference** using a fine-tuned Transformer model
+- **Per-class probability output** (`No Symptoms`, `Mild/Moderate`, `Severe`)
+- **Stateful chatbot behavior** across turns in one session
+- **Structured interview domains** (wellbeing, sleep/physical health, support, daily functioning, etc.)
+- **Answer-aware continuity** (the bot uses the previous answer before asking the next question)
+- **Conclusion + tips mode** after a few turns (summary of what was shared + actionable next steps)
+- **Safety escalation language** retained for severe-risk interactions
+- **Collapsed diagnostics UI** so normal users mainly see conversation text
+
+---
+
+## Repository structure
+
+- `streamlit_app.py`  
+  Main web app and conversational logic.
+- `chatbot_inference.py`  
+  Model loading, text preprocessing, classification inference, and severity framing.
+- `approach_a_bert_training.ipynb`  
+  Notebook used to train/export model artifacts.
+- `requirements_chatbot.txt`  
+  Python dependencies for running the app and inference.
+- `mental_heath_unbanlanced.csv`  
+  Dataset file used in the project workflow.
+- `approach_a_bert_model/` (expected, generated externally)  
+  Exported model directory with tokenizer/model weights and label map.
+
+---
+
+## Model artifacts expected
+
+The runtime expects a model folder (default `approach_a_bert_model/`) containing files such as:
+
+- `config.json`
+- `pytorch_model.bin` or `model.safetensors`
+- tokenizer files (`tokenizer.json`, vocab, merges, etc. depending on tokenizer)
+- `label_map.json` (optional; fallback mapping is used if missing)
+
+You can set a custom location with the `MODEL_DIR` environment variable or UI setup input.
+
+---
+
+## Installation
+
+Python 3.10+ is recommended.
 
 ```bash
 pip install -r requirements_chatbot.txt
+```
+
+---
+
+## Run the Streamlit chatbot
+
+```bash
 streamlit run streamlit_app.py
 ```
 
-CLI:
+In the app:
+
+- open the `setup` expander
+- confirm `Weights folder` points to your model directory
+- send chat messages in the input box
+
+---
+
+## Run CLI inference
 
 ```bash
 python chatbot_inference.py --model_dir ./approach_a_bert_model
 ```
 
-## Chat UX behavior (current)
+This starts an interactive terminal chat loop and prints model-aligned responses.
 
-- The chat now shows only the direct assistant reply by default.
-- Technical diagnostics are collapsed into expanders:
-  - `Model score currently`: mapped intent, confidence, and per-class scores.
-  - `Model/debug summary`: concise NLU mapping details.
-  - `Conversation trace`: context and follow-up selection path for the turn.
-- Assistant follow-up prompts use anti-repeat selection to reduce immediate repetition across same-intent turns.
-- Lightweight topic cues from user text (for example sleep, support, work/study, safety language) steer follow-up prompt choice without changing model classification outputs.
-- Safety guidance remains visible in every assistant response, and severe classification keeps explicit crisis-escalation wording.
+---
 
-## Training
+## Chatbot conversation behavior
 
-Open `approach_a_bert_training.ipynb` in **Google Colab** (GPU), set `CSV_PATH` to `mental_heath_unbanlanced.csv`, run all cells, then download the saved model folder.
+The current chatbot flow is:
 
-## Data & references
+1. classify each user message (`No Symptoms`, `Mild/Moderate`, `Severe`)
+2. continue a structured interview with domain-aware questions
+3. acknowledge and use the latest answer context
+4. after a few Q/A turns, produce a concise conclusion:
+   - what it heard so far
+   - suggested next steps
+   - guidance on when to seek professional support
 
-- `mental_heath_unbanlanced.csv` — Kaggle mental health text classification data.
-- Reference PDFs in the repo: base IEEE Access paper (Digital Twin dialogue system).
+For severe-risk cases, safety-first wording is prioritized.
+
+---
+
+## Streamlit UI behavior
+
+- Main chat shows only the assistant/user messages.
+- Diagnostics are available in collapsible sections:
+  - `Model score currently` (top label + class probabilities)
+  - `Model/debug summary` (intent mapping and confidence details)
+  - `Conversation trace` (internal flow indicators)
+
+This keeps the primary UX conversational while preserving transparency for debugging.
+
+---
+
+## Training notes
+
+Use `approach_a_bert_training.ipynb` (typically in Google Colab with GPU):
+
+1. set `CSV_PATH` to `mental_heath_unbanlanced.csv`
+2. run training/evaluation/export cells
+3. download exported model folder
+4. place it in this repo as `approach_a_bert_model/` (or set `MODEL_DIR`)
+
+---
+
+## Safety and limitations
+
+- This tool is for **screening-style support and educational use**.
+- Predictions can be wrong (false positives/false negatives).
+- Output quality depends on training data quality and coverage.
+- It does not perform clinical diagnosis.
+- In any immediate safety crisis, users should contact emergency services or a local crisis line.
+
+---
+
+## License / usage context
+
+This repository is maintained as a student/coursework-style project.  
+Use responsibly, and avoid deploying as a standalone clinical decision system without formal clinical validation and governance.
 
